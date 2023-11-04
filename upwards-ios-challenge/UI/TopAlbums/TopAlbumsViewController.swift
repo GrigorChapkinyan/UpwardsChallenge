@@ -8,6 +8,7 @@
 import UIKit
 
 final class TopAlbumsViewController: UIViewController {
+    // MARK: - Private Properties
     
     private let iTunesAPI: ITunesAPI
     private let tableView = UITableView()
@@ -17,19 +18,23 @@ final class TopAlbumsViewController: UIViewController {
         }
     }
     
+    // MARK: - Initializers
+    
     init(iTunesAPI: ITunesAPI) {
         self.iTunesAPI = iTunesAPI
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError(Constants.TopAlbumsViewController.initFatalErrorMsg.rawValue)
     }
+    
+    // MARK: - View Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
      
-        navigationItem.title = "Top Albums"
+        navigationItem.title = Constants.TopAlbumsViewController.topAlubms.localizedString()
         tableView.dataSource = self
         tableView.delegate = self
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -46,19 +51,25 @@ final class TopAlbumsViewController: UIViewController {
         loadData()
     }
     
+    // MARK: - Private API
+    
     private func loadData() {
-        iTunesAPI.getTopAlbums(limit: 10) { [weak self] res in
+        Task.detached { [weak self] in
+            let res = await self?.iTunesAPI.getTopAlbums()
+            
             switch res {
-            case .success(let data):
-                DispatchQueue.main.async {
-                    self?.albums = data.feed.results
-                }
-            case .failure(let err):
-                debugPrint(err)
+                case .success(let data):
+                    await MainActor.run { [weak self] in
+                        self?.albums = data.feed.results
+                    }
+                case .failure(let err):
+                    debugPrint(err)
+                
+                default:
+                    break
             }
         }
     }
-    
 }
 
 // MARK: - UITableViewDataSource
@@ -83,5 +94,14 @@ extension TopAlbumsViewController: UITableViewDataSource {
 extension TopAlbumsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         debugPrint(albums[indexPath.row])
+    }
+}
+
+// MARK: - Constants + TopAlbumsViewController
+
+fileprivate extension Constants {
+    enum TopAlbumsViewController: String, ILocalizableRawRepresentable {
+        case topAlubms = "Top Albums"
+        case initFatalErrorMsg = "init(coder:) has not been implemented"
     }
 }

@@ -20,8 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let w = UIWindow(windowScene: windowScene)
             window = w
             
-            let network = Network(sessionConfig: URLSessionConfiguration.default)
-            let topAlbumCtrl = TopAlbumsViewController(iTunesAPI: ITunesAPI(network: network))
+            let topAlbumCtrl = TopAlbumsViewController(iTunesAPI: ITunesAPI())
             let nav = UINavigationController(rootViewController: topAlbumCtrl)
             window?.rootViewController = nav
             window?.makeKeyAndVisible()
@@ -55,7 +54,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
     }
-
-
 }
-

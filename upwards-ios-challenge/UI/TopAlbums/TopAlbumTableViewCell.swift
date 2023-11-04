@@ -8,11 +8,14 @@
 import UIKit
 
 class TopAlbumTableViewCell: UITableViewCell {
-        
+    // MARK: - Public Properties
+    
     let containerView = UIView()
     let stackView = UIStackView()
     let albumLabel = UILabel()
     let artistNameLabel = UILabel()
+
+    // MARK: - Initializers
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -24,6 +27,8 @@ class TopAlbumTableViewCell: UITableViewCell {
         commonInit()
     }
     
+    // MARK: - Private API
+
     private func commonInit() {
         stackView.axis = .vertical
         stackView.addArrangedSubview(albumLabel)
