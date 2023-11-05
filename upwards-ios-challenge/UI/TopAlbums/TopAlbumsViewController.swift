@@ -10,7 +10,7 @@ import UIKit
 final class TopAlbumsViewController: UIViewController {
     // MARK: - Private Properties
     
-    private let iTunesAPI: ITunesAPI
+    private let albumFeedRemoteStorage: AlbumFeedRemoteStorage
     private let tableView = UITableView()
     private var albums = [Album]() {
         didSet {
@@ -20,8 +20,8 @@ final class TopAlbumsViewController: UIViewController {
     
     // MARK: - Initializers
     
-    init(iTunesAPI: ITunesAPI) {
-        self.iTunesAPI = iTunesAPI
+    init(albumFeedRemoteStorage: AlbumFeedRemoteStorage) {
+        self.albumFeedRemoteStorage = albumFeedRemoteStorage
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -55,12 +55,12 @@ final class TopAlbumsViewController: UIViewController {
     
     private func loadData() {
         Task.detached { [weak self] in
-            let res = await self?.iTunesAPI.getTopAlbums()
+            let res = await self?.albumFeedRemoteStorage.getItems()
             
             switch res {
                 case .success(let data):
                     await MainActor.run { [weak self] in
-                        self?.albums = data.feed.results
+                        self?.albums = data.first?.feed.results ?? []
                     }
                 case .failure(let err):
                     debugPrint(err)
