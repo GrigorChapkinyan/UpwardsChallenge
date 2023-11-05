@@ -21,8 +21,8 @@ struct AlbumFeedRemoteStorage: IRemoteStorage {
         setupIntialsConfigs()
     }
     
-    func getItems(limit: Int? = 10) async -> Result<[AlbumFeed], Error> {
-        let request = HTTPRequest(url: "\(Constants.AlbumFeedRemoteStorage.baseURL.rawValue)\(Constants.AlbumFeedRemoteStorage.mostPlayedAlbumsPath.rawValue)/\(limit ?? 10)\(Constants.AlbumFeedRemoteStorage.mostPlayedAlbumsEndpoint.rawValue)")
+    func getItems(limit: Int? = nil) async -> Result<[AlbumFeed], Error> {
+        let request = HTTPRequest(url: "\(Constants.AlbumFeedRemoteStorage.Endpoints.baseURL.rawValue)\(Constants.AlbumFeedRemoteStorage.Endpoints.mostPlayedAlbumsPath.rawValue)/\(limit ?? 10)\(Constants.AlbumFeedRemoteStorage.Endpoints.mostPlayedAlbumsEndpoint.rawValue)")
         return await self.requestExecutor
             .execute(request)
             .flatMap({ (data) in
@@ -61,16 +61,16 @@ struct AlbumFeedRemoteStorage: IRemoteStorage {
     private func configureDateDecodingStrategy(for decoder: JSONDecoder) {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .iso8601)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.locale = Locale(identifier: Constants.AlbumFeedRemoteStorage.Utils.dateFormatterLocaleId.rawValue)
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.dateFormat = Constants.AlbumFeedRemoteStorage.Utils.dateFormat.rawValue
         decoder.dateDecodingStrategy = .formatted(formatter)
     }
 }
 
 // MARK: - AlbumFeedRemoteStorageError
 
-fileprivate enum AlbumFeedRemoteStorageError: Swift.Error {
+enum AlbumFeedRemoteStorageError: Swift.Error {
     case noProvidedApiForCurrentAction
     case dataDowncastError
 }
@@ -89,10 +89,17 @@ extension AlbumFeedRemoteStorageError: LocalizedError {
 // MARK: - Constants + AlbumFeedRemoteStorage
 
 fileprivate extension Constants {
-    enum AlbumFeedRemoteStorage: String {
-        case baseURL = "https://rss.applemarketingtools.com"
-        case mostPlayedAlbumsPath = "/api/v2/us/music/most-played"
-        case mostPlayedAlbumsEndpoint = "/albums.json"
+    struct AlbumFeedRemoteStorage {
+        enum Endpoints: String {
+            case baseURL = "https://rss.applemarketingtools.com"
+            case mostPlayedAlbumsPath = "/api/v2/us/music/most-played"
+            case mostPlayedAlbumsEndpoint = "/albums.json"
+        }
+        
+        enum Utils: String {
+            case dateFormatterLocaleId = "en_US_POSIX"
+            case dateFormat = "yyyy-MM-dd"
+        }
     }
 }
 

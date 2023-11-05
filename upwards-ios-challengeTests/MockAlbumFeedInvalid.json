@@ -1,0 +1,43 @@
+{
+    "feed": {
+        "title": "Top Albums",
+        "id": "https://rss.applemarketingtools.com/api/v2/us/music/most-played/100/albums.json",
+        "author": {
+            "name": "Apple",
+            "url": "https://www.apple.com/"
+        },
+        "links": [
+            {
+                "self": "https://rss.applemarketingtools.com/api/v2/us/music/most-played/100/albums.json"
+            }
+        ],
+        "copyright": "Copyright © 2023 Apple Inc. All rights reserved.",
+        "country": "us",
+        "icon": "https://www.apple.com/favicon.ico",
+        "updated": "Fri, 3 Nov 2023 23:42:33 +0000",
+        "results": [
+            {
+                "id": "1713845538",
+                "name": "1989 (Taylor's Version) [Deluxe]",
+                "releaseDate": "2023-10-27",
+                "kind": "albums",
+                "artistId": "159260351",
+                "artistUrl": "https://music.apple.com/us/artist/taylor-swift/159260351",
+                "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/8e/35/6c/8e356cc2-0be4-b83b-d29e-b578623df2ac/23UM1IM34052.rgb.jpg/100x100bb.jpg",
+                "genres": [
+                    {
+                        "genreId": "14",
+                        "name": "Pop",
+                        "url": "https://itunes.apple.com/us/genre/id14"
+                    },
+                    {
+                        "genreId": "34",
+                        "name": "Music",
+                        "url": "https://itunes.apple.com/us/genre/id34"
+                    }
+                ],
+                "url": "https://music.apple.com/us/album/1989-taylors-version-deluxe/1713845538"
+            }
+        ]
+    }
+}
