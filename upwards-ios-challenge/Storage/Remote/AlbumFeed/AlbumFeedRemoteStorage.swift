@@ -21,8 +21,8 @@ struct AlbumFeedRemoteStorage: IRemoteStorage {
         setupIntialsConfigs()
     }
     
-    func getItems(limit: Int? = nil) async -> Result<[AlbumFeed], Error> {
-        let request = HTTPRequest(url: "\(Constants.AlbumFeedRemoteStorage.Endpoints.baseURL.rawValue)\(Constants.AlbumFeedRemoteStorage.Endpoints.mostPlayedAlbumsPath.rawValue)/\(limit ?? 10)\(Constants.AlbumFeedRemoteStorage.Endpoints.mostPlayedAlbumsEndpoint.rawValue)")
+    func getItems(predicate: NSPredicate?, sortDescriptor: SortDescriptor<AlbumFeed>?, limit: Int?) async -> Result<[AlbumFeed], Error> {
+        let request = HTTPRequest(url: "\(Constants.AlbumFeedRemoteStorage.Endpoints.baseURL.rawValue)\(Constants.AlbumFeedRemoteStorage.Endpoints.mostPlayedAlbumsPath.rawValue)/\(limit ?? 100)\(Constants.AlbumFeedRemoteStorage.Endpoints.mostPlayedAlbumsEndpoint.rawValue)")
         return await self.requestExecutor
             .execute(request)
             .flatMap({ (data) in
@@ -32,6 +32,10 @@ struct AlbumFeedRemoteStorage: IRemoteStorage {
                 
                 do {
                     let albumFeed = try self.jsonDecoder.decode(AlbumFeed.self, from: data)
+                    if let _ = sortDescriptor {
+                        // One object :D no sort, just keep the original relationship of entities, to show the work with CoreData
+//                        albumFeed.sort(using: sortDescriptor)
+                    }
                     return .success([albumFeed])
                 }
                 catch {
@@ -40,11 +44,7 @@ struct AlbumFeedRemoteStorage: IRemoteStorage {
             })
     }
     
-    func removeItems(with ids: [String]) async -> Result<Void, Error> {
-        return .failure(AlbumFeedRemoteStorageError.noProvidedApiForCurrentAction)
-    }
-    
-    func getItems(with ids: [String]) async -> Result<[AlbumFeed], Error> {
+    func remove(_ items: [AlbumFeed]) async -> Result<Void, Error> {
         return .failure(AlbumFeedRemoteStorageError.noProvidedApiForCurrentAction)
     }
     
@@ -55,16 +55,7 @@ struct AlbumFeedRemoteStorage: IRemoteStorage {
     // MARK: - Private API
     
     private func setupIntialsConfigs() {
-        configureDateDecodingStrategy(for: jsonDecoder)
-    }
-    
-    private func configureDateDecodingStrategy(for decoder: JSONDecoder) {
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .iso8601)
-        formatter.locale = Locale(identifier: Constants.AlbumFeedRemoteStorage.Utils.dateFormatterLocaleId.rawValue)
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = Constants.AlbumFeedRemoteStorage.Utils.dateFormat.rawValue
-        decoder.dateDecodingStrategy = .formatted(formatter)
+        jsonDecoder.dateDecodingStrategy = Album.getCorrectDecoderStrategy()
     }
 }
 
@@ -94,11 +85,6 @@ fileprivate extension Constants {
             case baseURL = "https://rss.applemarketingtools.com"
             case mostPlayedAlbumsPath = "/api/v2/us/music/most-played"
             case mostPlayedAlbumsEndpoint = "/albums.json"
-        }
-        
-        enum Utils: String {
-            case dateFormatterLocaleId = "en_US_POSIX"
-            case dateFormat = "yyyy-MM-dd"
         }
     }
 }

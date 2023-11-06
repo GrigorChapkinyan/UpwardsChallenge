@@ -8,7 +8,7 @@
 import Foundation
 
 /// Representation of HTTPRequest type
-struct HTTPRequest: IRequest {
+struct HTTPRequest: IURLRequestConvertable {
     // MARK: Nested types
     
     enum HTTPMethod: String {
@@ -42,9 +42,6 @@ struct HTTPRequest: IRequest {
 
     // MARK: - IRequest
     
-    /// Tries to build and return URLRequest
-    /// - Returns: URLRequest if no error was thrown
-    /// - Throws: HTTPError
     func asURLRequest() throws -> URLRequest {
         // Trying to create URL from the absolute string
         guard let apiURL = URL(string: url) else {

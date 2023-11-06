@@ -34,10 +34,14 @@ final class HTTPRequestExecutor: NSObject, IRequestExecutor, URLSessionDelegate 
     /// - Returns: Result<Data, Error> of the execution
     func execute(_ request: IRequest) async -> Result<Any, Error> {
         do {
+            // Trying to build URLRequest from the initial request
+            guard   let urlRequestConvertable = request as? IURLRequestConvertable else {
+                throw IRequestError.invalidRequestPassed
+            }
+            
+            let urlRequest = try urlRequestConvertable.asURLRequest()
             // Logging about request
             addLog(request)
-            // Trying to build URLRequest from the initial request
-            let urlRequest = try request.asURLRequest()
             // Trying to do HttpRequest with builded urlRequest
             let (data, urlResponse) = try await urlSession.data(for: urlRequest)
             

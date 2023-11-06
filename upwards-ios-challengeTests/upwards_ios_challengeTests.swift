@@ -19,14 +19,14 @@ final class upwards_ios_challengeTests: XCTestCase {
     
     // MARK: - AlbumFeedRemoteStorage Tests
     
-    func test_AlbumFeedRemoteStorage_RemoveItems_WithIds_Method() async {
+    func test_AlbumFeedRemoteStorage_RemoveItems_Method() async {
         let albumFeedRemoteStorage = AlbumFeedRemoteStorage(with: TestRequestExecutor(dataModelType: .albumFeed))
 
-        // Testing "func removeItems(with ids: [String]) async -> Result<Void, Error>" method
+        // Testing "func remove([]) async -> Result<Void, Error>" method
         var albumError: Error?
         
         do {
-            try await albumFeedRemoteStorage.removeItems(with: ["1"]).get()
+            let _ = try await albumFeedRemoteStorage.remove([]).get()
         }
         catch {
             albumError = error
@@ -43,7 +43,7 @@ final class upwards_ios_challengeTests: XCTestCase {
         var albumError: Error?
         
         do {
-            try await albumFeedRemoteStorage.addItems([AlbumFeed(feed: AlbumFeed.Feed(results: [Album(id: "Test", name: "Test", artistName: "Tet", releaseDate: Date())]))]).get()
+            try await albumFeedRemoteStorage.addItems([AlbumFeed(feed: Feed(results: [Album(id: "Test", name: "Test", artistName: "Tet", releaseDate: Date())]))]).get()
         }
         catch {
             albumError = error
@@ -60,7 +60,7 @@ final class upwards_ios_challengeTests: XCTestCase {
         var albumError: AlbumFeedRemoteStorageError?
         
         do {
-            album = try await albumFeedRemoteStorageWithWrongDataType.getItems().get().first?.feed.results.first
+            album = try await albumFeedRemoteStorageWithWrongDataType.getItems(predicate: nil, sortDescriptor: nil, limit: nil).get().first?.feed.results.first
         }
         catch {
             albumError = error as? AlbumFeedRemoteStorageError
@@ -78,7 +78,7 @@ final class upwards_ios_challengeTests: XCTestCase {
         var albumError: Error!
         
         do {
-            album = try await albumFeedRemoteStorageWithInvalidJson.getItems().get().first?.feed.results.first
+            album = try await albumFeedRemoteStorageWithInvalidJson.getItems(predicate: nil, sortDescriptor: nil, limit: nil).get().first?.feed.results.first
         }
         catch {
             albumError = error
@@ -86,25 +86,6 @@ final class upwards_ios_challengeTests: XCTestCase {
         
         XCTAssertNil(album)
         XCTAssertTrue(albumError is DecodingError)
-    }
-    
-    func test_AlbumFeedRemoteStorage_GetItems_WithIds_Method() async {
-        let albumFeedRemoteStorage = AlbumFeedRemoteStorage(with: TestRequestExecutor(dataModelType: .albumFeed))
-        
-        // Testing "func getItems(with ids: [String]) async -> Result<[AlbumFeed], Error>" method
-        var album: Album?
-        var albumError: Error?
-        
-        do {
-            album = try await albumFeedRemoteStorage.getItems(with: ["1"]).get().first?.feed.results.first
-        }
-        catch {
-            albumError = error
-        }
-        
-        XCTAssertNil(album)
-        XCTAssertEqual(albumError as! AlbumFeedRemoteStorageError, AlbumFeedRemoteStorageError.noProvidedApiForCurrentAction)
-        XCTAssertEqual(albumError?.localizedDescription, AlbumFeedRemoteStorageError.noProvidedApiForCurrentAction.localizedDescription)
     }
     
     func testAlbumFeedRemoteStorageWithSuccess() async throws {
@@ -115,7 +96,7 @@ final class upwards_ios_challengeTests: XCTestCase {
         var albumError: AlbumFeedRemoteStorageError?
         
         do {
-            album = try await albumFeedRemoteStorage.getItems().get().first?.feed.results.first
+            album = try await albumFeedRemoteStorage.getItems(predicate: nil, sortDescriptor: nil, limit: nil).get().first?.feed.results.first
         }
         catch {
             albumError = error as? AlbumFeedRemoteStorageError

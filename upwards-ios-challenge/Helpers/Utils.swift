@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit.UIImage
 
 // MARK: - Helper Interfaces
 
@@ -25,4 +26,22 @@ extension ILocalizableRawRepresentable {
                              comment: String = "") -> String {
         return NSLocalizedString(self.rawValue, tableName: tableName, bundle: bundle, value: value, comment: comment)
     }
+}
+
+struct Utils {
+    private func getData(from url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
+        URLSession.shared.dataTask(with: url, completionHandler: completion).resume()
+    }
+    
+    func downloadImage(from url: URL, completion: @escaping (UIImage?) -> ()) {
+        getData(from: url) { data, response, error in
+            guard let data = data, error == nil else { return }
+            print(response?.suggestedFilename ?? url.lastPathComponent)
+            // always update the UI from the main thread
+            DispatchQueue.main.async() {
+                completion(UIImage(data: data))
+            }
+        }
+    }
+
 }

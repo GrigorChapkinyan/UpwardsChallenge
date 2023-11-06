@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22225" systemVersion="22G91" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="AlbumFeedMO" representedClassName=".AlbumFeedMO" syncable="YES" codeGenerationType="category">
+        <attribute name="customId" attributeType="String" defaultValueString="hardcodeCustomId"/>
+        <relationship name="feed" maxCount="1" deletionRule="Cascade" destinationEntity="FeedMO" inverseName="albumFeed" inverseEntity="FeedMO"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="customId"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <entity name="AlbumMO" representedClassName=".AlbumMO" syncable="YES" codeGenerationType="category">
+        <attribute name="artistName" attributeType="String" defaultValueString=""/>
+        <attribute name="artworkIconUrlPath" optional="YES" attributeType="String"/>
+        <attribute name="customId" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="releaseDate" attributeType="Date" defaultDateTimeInterval="720980640" usesScalarValueType="NO"/>
+        <relationship name="feed" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FeedMO" inverseName="results" inverseEntity="FeedMO"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="customId"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <entity name="FeedMO" representedClassName=".FeedMO" syncable="YES" codeGenerationType="category">
+        <relationship name="albumFeed" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AlbumFeedMO" inverseName="feed" inverseEntity="AlbumFeedMO"/>
+        <relationship name="results" toMany="YES" deletionRule="Cascade" destinationEntity="AlbumMO" inverseName="feed" inverseEntity="AlbumMO"/>
+    </entity>
+</model>

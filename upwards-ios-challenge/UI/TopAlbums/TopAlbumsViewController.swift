@@ -2,106 +2,106 @@
 //  TopAlbumsViewController.swift
 //  upwards-ios-challenge
 //
-//  Created by Alex Livenson on 9/13/21.
+//  Created by Grigor Chapkinyan on 11/6/23.
 //
 
 import UIKit
 
-final class TopAlbumsViewController: UIViewController {
+class TopAlbumsViewController: UIViewController, UICollectionViewDataSource {
+    // MARK: - Static Properties
+    
+    static let nibId = "TopAlbumsViewController"
+    
+    // MARK: - IBoutlets
+    
+    @IBOutlet private weak var albumsCollectionView: UICollectionView!
+    
     // MARK: - Private Properties
     
-    private let albumFeedRemoteStorage: AlbumFeedRemoteStorage
-    private let tableView = UITableView()
-    private var albums = [Album]() {
-        didSet {
-            tableView.reloadData()
-        }
-    }
-    
-    // MARK: - Initializers
-    
-    init(albumFeedRemoteStorage: AlbumFeedRemoteStorage) {
-        self.albumFeedRemoteStorage = albumFeedRemoteStorage
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError(Constants.TopAlbumsViewController.initFatalErrorMsg.rawValue)
-    }
+    var viewModel: TopAlbumsViewModel!
     
     // MARK: - View Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-     
-        navigationItem.title = Constants.TopAlbumsViewController.topAlubms.localizedString()
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.register(TopAlbumTableViewCell.self, forCellReuseIdentifier: TopAlbumTableViewCell.description())
-        view.addSubview(tableView)
+        setupInitialConfigs()
+        setupViewModel(TopAlbumsViewModel(itemsReceived: nil, errorReceived: nil))
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
+        viewModel?.refresh?()
+    }
+    
+    func setupViewModel(_ viewModel: TopAlbumsViewModel) {
+        self.viewModel = viewModel
         
-        loadData()
+        viewModel.itemsReceived = { [weak self] (_) in
+            self?.albumsCollectionView.reloadData()
+        }
+    }
+        
+    // MARK: - UICollectionViewDataSource
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let albumCell = albumsCollectionView.dequeueReusableCell(withReuseIdentifier: TopAlbumCollectionViewCell.reuseId, for: indexPath) as? TopAlbumCollectionViewCell,
+              let cellViewModel = self.viewModel?.items[indexPath.row]  else {
+            return TopAlbumCollectionViewCell()
+        }
+        
+        albumCell.setup(viewModel: cellViewModel)
+        
+        return albumCell
+    }
+
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return viewModel?.items.count ?? 0
     }
     
     // MARK: - Private API
-    
-    private func loadData() {
-        Task.detached { [weak self] in
-            let res = await self?.albumFeedRemoteStorage.getItems()
-            
-            switch res {
-                case .success(let data):
-                    await MainActor.run { [weak self] in
-                        self?.albums = data.first?.feed.results ?? []
-                    }
-                case .failure(let err):
-                    debugPrint(err)
-                
-                default:
-                    break
-            }
-        }
+
+    private func setupInitialConfigs() {
+        albumsCollectionView.register(UINib(nibName: TopAlbumCollectionViewCell.nibName, bundle: nil), forCellWithReuseIdentifier: TopAlbumCollectionViewCell.reuseId)
+        albumsCollectionView.allowsSelection = false
+        albumsCollectionView.dataSource = self
+        albumsCollectionView.delegate = self
+        albumsCollectionView.showsHorizontalScrollIndicator = false
+        albumsCollectionView.showsVerticalScrollIndicator = false
     }
 }
 
-// MARK: - UITableViewDataSource
+// MARK: - UICollectionViewDelegate
 
-extension TopAlbumsViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        albums.count
+extension TopAlbumsViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let album = albums[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: TopAlbumTableViewCell.description(), for: indexPath) as! TopAlbumTableViewCell
-        cell.albumLabel.text = album.name
-        cell.artistNameLabel.text = album.artistName
-                
-        return cell
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return Constants.collectionViewCellMinimumInteritemSpacing
     }
-}
-
-// MARK: - UITableViewDelegate
-
-extension TopAlbumsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        debugPrint(albums[indexPath.row])
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return Constants.collectionViewCellMinimumLineSpacing
     }
-}
-
-// MARK: - Constants + TopAlbumsViewController
-
-fileprivate extension Constants {
-    enum TopAlbumsViewController: String, ILocalizableRawRepresentable {
-        case topAlubms = "Top Albums"
-        case initFatalErrorMsg = "init(coder:) has not been implemented"
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return categoryPreviewCollectionViewCellSizeFor(indexPath: indexPath)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return categoryPreviewCollectionViewInsetFor(section: section)
+    }
+    
+    private func categoryPreviewCollectionViewInsetFor(section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets.zero
+    }
+    
+    private func categoryPreviewCollectionViewCellSizeFor(indexPath: IndexPath) -> CGSize {
+        let cellsWidth = CGFloat(floor((self.albumsCollectionView.frame.width - (Constants.collectionViewCellMinimumInteritemSpacing)) / 2))
+        let cellsHeight = CGFloat(floor((self.albumsCollectionView.frame.height - (Constants.collectionViewCellMinimumLineSpacing)) / 2))
+        
+        return CGSize(width: cellsWidth, height: cellsHeight)
     }
 }

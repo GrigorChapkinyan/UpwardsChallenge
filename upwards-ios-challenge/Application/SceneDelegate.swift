@@ -20,7 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let w = UIWindow(windowScene: windowScene)
             window = w
             
-            let topAlbumCtrl = TopAlbumsViewController(albumFeedRemoteStorage: AlbumFeedRemoteStorage(with: HTTPRequestExecutor()))
+            let topAlbumCtrl = TopAlbumsViewController(nibName: "TopAlbumsViewController", bundle: nil)
             let nav = UINavigationController(rootViewController: topAlbumCtrl)
             window?.rootViewController = nav
             window?.makeKeyAndVisible()

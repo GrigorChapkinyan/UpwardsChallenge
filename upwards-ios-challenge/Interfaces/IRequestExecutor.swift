@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 /// This is an abstract interface representing an API for executing requests of "IRequest" type.
 protocol IRequestExecutor {
